@@ -8,6 +8,8 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { FXAAShaders } from 'three/examples/js/shaders/FXAAShader';
+import { ImprovedNoise } from 'three/examples/jsm/math/ImprovedNoise.js';
+import  {Smoke } from "./smoke"
 
 // Debug
 const gui = new dat.GUI()
@@ -112,6 +114,41 @@ renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
 
+//Cloud
+// let smokeMaterial,h, w, smokeParticles = [];
+// const loader = new THREE.TextureLoader();
+
+// loader.crossOrigin = '';
+
+// loader.load('https://s3-us-west-2.amazonaws.com/s.cdpn.io/82015/blue-smoke.png',
+//     function onLoad(texture) {
+//         const smokeGeo = new THREE.PlaneBufferGeometry(300, 300);
+
+//         smokeMaterial = new THREE.MeshLambertMaterial({
+//             map: texture,
+//             transparent: true
+//         });
+
+//         for (let p = 0, l = 350; p < l; p++) {
+//             let particle = new THREE.Mesh(smokeGeo, smokeMaterial);
+
+//             particle.position.set(
+//                 Math.random() * 500 - 250,
+//                 Math.random() * 500 - 250,
+//                 Math.random() * 1000 - 100
+//             );
+
+//             particle.rotation.z = Math.random() * 360;
+//             scene.add(particle);
+//             smokeParticles.push(particle);
+//         }
+
+//     }
+// );
+
+
+
+
 //Fog
 // let smokeParticles = []
 // addParticles();
@@ -157,6 +194,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 //     }
 // });
 
+
 //Bloom
 // const renderScene = new RenderPass()
 	
@@ -180,6 +218,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 // renderer.gammaOutput = true
 // renderer.toneMappingExposure = Math.pow( 0.9, 4.0 ) 
 
+//
 
 /**
  * Animate
@@ -208,6 +247,7 @@ const tick = () =>
     box3.rotation.x = elapsedTime*0.5;
     box4.rotation.x = elapsedTime*0.5;
     box5.rotation.x = elapsedTime*0.5;
+
 
     // evolveSmoke(clock.getDelta());
     
