@@ -1,18 +1,32 @@
 import './style.css'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import { TTFLoader } from 'three/examples/jsm/loaders/TTFLoader.js'
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
 import * as dat from 'dat.gui'
-import { MeshBasicMaterial, SphereGeometry, TextureFilter, Vector3 } from 'three'
-import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
-import { FXAAShaders } from 'three/examples/js/shaders/FXAAShader';
-import { ImprovedNoise } from 'three/examples/jsm/math/ImprovedNoise.js';
+import { MeshBasicMaterial, SphereGeometry, TextureFilter, TextureLoader, Vector3 } from 'three'
 import  {Smoke } from "./smoke"
+import { Font, FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 
-// Debug
+
+
+// Gui
+var animationConfig = {restartSound: false,restartAnimation: false}
+animationConfig.restartSound = async function(){
+    play();
+    return;
+}
+
+animationConfig.restartAnimation = async function(){
+    startCameraAnimation()
+    return;
+}
+
 const gui = new dat.GUI()
+const folder = gui.addFolder("Animation");
+folder.add(animationConfig,"restartSound");
+folder.add(animationConfig,"restartAnimation");
+
 
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
@@ -29,6 +43,7 @@ const boxGeometry = new THREE.BoxGeometry(5,5,5);
 // Materials
 const material = new THREE.MeshBasicMaterial()
 material.color = new THREE.Color(0x0033cc)
+
 
 // Mesh
 const boxesGroup = new THREE.Group();
@@ -57,11 +72,20 @@ pointLight.position.y = 1
 pointLight.position.z = 15
 scene.add(pointLight)
 
+// const pointLight2 = new THREE.PointLight(0xffffff, 1)
+// pointLight2.position.x = 2
+// pointLight2.position.y = 1
+// pointLight2.position.z = 30
+// scene.add(pointLight2)
+
+var ambientLight = new THREE.AmbientLight(0x404040);
+scene.add(ambientLight);
+
 
 //Helpers
-scene.add(new THREE.PointLightHelper(pointLight, 1));
-scene.add(new THREE.GridHelper(50, 50));
-scene.fog = new THREE.FogExp2(0x03544e, 0.001);
+// scene.add(new THREE.PointLightHelper(pointLight, 1));
+// scene.add(new THREE.GridHelper(50, 50));
+// scene.fog = new THREE.FogExp2(0x03544e, 0.001);
 
 /**
  * Sizes
@@ -113,118 +137,57 @@ const renderer = new THREE.WebGLRenderer({
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
+//Sound
+function play(){
+    const listener = new THREE.AudioListener();
+    camera.add( listener );
 
-//Cloud
-// let smokeMaterial,h, w, smokeParticles = [];
-// const loader = new THREE.TextureLoader();
+    // create a global audio source
+    const sound = new THREE.Audio( listener );
 
-// loader.crossOrigin = '';
-
-// loader.load('https://s3-us-west-2.amazonaws.com/s.cdpn.io/82015/blue-smoke.png',
-//     function onLoad(texture) {
-//         const smokeGeo = new THREE.PlaneBufferGeometry(300, 300);
-
-//         smokeMaterial = new THREE.MeshLambertMaterial({
-//             map: texture,
-//             transparent: true
-//         });
-
-//         for (let p = 0, l = 350; p < l; p++) {
-//             let particle = new THREE.Mesh(smokeGeo, smokeMaterial);
-
-//             particle.position.set(
-//                 Math.random() * 500 - 250,
-//                 Math.random() * 500 - 250,
-//                 Math.random() * 1000 - 100
-//             );
-
-//             particle.rotation.z = Math.random() * 360;
-//             scene.add(particle);
-//             smokeParticles.push(particle);
-//         }
-
-//     }
-// );
-
-
-
-
-//Fog
-// let smokeParticles = []
-// addParticles();
-// addBackground();
-
-
-// let cloudParticles = [];
-// let loader = new THREE.TextureLoader();
-// loader.load("blue_fog.png", function(texture){
-//     let cloudGeo = new THREE.PlaneBufferGeometry(100,100);
-//     let cloudMaterial = new THREE.MeshLambertMaterial({
-//     map:texture,
-//     transparent: true
-// });
-//     for(let p=0; p<50; p++) {
-//         let cloud = new THREE.Mesh(cloudGeo, cloudMaterial);
-//         cloud.position.set(1+p ,0,1+p
-//         );
-//     cloud.rotation.x = 1.16;
-//     cloud.rotation.y = -0.12;
-//     cloud.rotation.z = Math.random()*2*Math.PI;
-//     cloud.material.opacity = 0.55;
-//     cloudParticles.push(cloud);
-//     scene.add(cloud);
-//   }
-// });
-// loader.load("blue_fog.png", function(texture){
-//     let cloudGeo = new THREE.PlaneBufferGeometry(500,500);
-//     let cloudMaterial = new THREE.MeshLambertMaterial({
-//         map: texture,
-//         transparent: true,
-//     })
-
-//     for( let i = 0 ; i<50; i++){
-//         let cloud = new THREE.Mesh(cloudGeo,cloudMaterial);
-//         // cloud.position.set(Math.random()*800-400, 500, Math.random() * 500 - 500);
-//         cloud.position.set(i,0,0);
-//         cloud.rotation.x = 1.16;
-//         cloud.rotation.y = -0.12;
-//         cloud.rotation.z = Math.random()*2*Math.PI;
-//         cloud.material.opacity = 0.55;
-//         scene.add(cloud);
-//     }
-// });
-
-
-//Bloom
-// const renderScene = new RenderPass()
-	
-// const effectFXAA = new ShaderPass( THREE.FXAAShaders )
-// // effectFXAA.uniforms.resolution.value.set( 1 / window.innerWidth, 1 / window.innerHeight )
-	
-// const bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 )
-// bloomPass.threshold = 0.21
-// bloomPass.strength = 1.2
-// bloomPass.radius = 0.55
-// bloomPass.renderToScreen = true
-	
-// const composer = new EffectComposer( renderer )
-// composer.setSize( window.innerWidth, window.innerHeight )
-	
-// composer.addPass( renderScene )
-// composer.addPass( effectFXAA )
-// composer.addPass( bloomPass )
-	
-// renderer.gammaInput = true
-// renderer.gammaOutput = true
-// renderer.toneMappingExposure = Math.pow( 0.9, 4.0 ) 
-
-//
+    // load a sound and set it as the Audio object's buffer
+    const audioLoader = new THREE.AudioLoader();
+    audioLoader.load( 'background_audio.mp3', function( buffer ) {
+        sound.setBuffer( buffer );
+        sound.setLoop( false );
+        sound.setVolume( 0.5 );
+        sound.play();
+    });
+}
+// play();
 
 /**
  * Animate
  */
 
 const clock = new THREE.Clock()
+
+var cameraY = camera.position.y;
+var cameraX = camera.position.x;
+var cameraZ = camera.position.z;
+var cameraClock = new THREE.Clock();
+
+var playstationFlag = false;
+var sonyFlag = false;
+
+//Text
+var sonyText;
+var playstationText;
+
+function startCameraAnimation(){
+    cameraClock = new THREE.Clock();
+    play();
+    if(sonyFlag){
+        scene.remove(sonyText);
+        sonyFlag = false;
+    }
+    if(playstationFlag){
+        scene.remove(playstationText);
+        playstationFlag = false;
+    }
+}
+startCameraAnimation();
+
 
 const tick = () =>
 {
@@ -248,16 +211,33 @@ const tick = () =>
     box4.rotation.x = elapsedTime*0.5;
     box5.rotation.x = elapsedTime*0.5;
 
-
-    // evolveSmoke(clock.getDelta());
+    var cameraElapsedTime = cameraClock.getElapsedTime()*2;
     
-    // camera.layers.set(1);
-    // composer.render();
     
-    // renderer.clearDepth();
-    // camera.layers.set(0);
-
-    // Update Orbital Controls
+    //Creates Sony Text
+    if(cameraElapsedTime <= 5){
+        camera.position.set(cameraX,cameraY - cameraElapsedTime, cameraZ);
+        if(!sonyFlag){
+            startSonyFont();
+            sonyFlag = true;
+        }
+    }else{
+        //Removes Sony Text
+        if(cameraElapsedTime <= 7.5){
+            camera.position.set(cameraX,cameraY - cameraElapsedTime, cameraZ);
+            if(sonyFlag){
+                scene.remove(sonyText);
+                sonyFlag = false;
+            }
+        }else{
+            //Stops the camera after the time
+            if(cameraElapsedTime <= 28){
+                camera.position.set(cameraX,cameraY - cameraElapsedTime, cameraZ);
+            }else{
+                startPlaystationFont();
+            }
+        }
+    }
     controls.update()
     // Render
     renderer.render(scene, camera)
@@ -273,12 +253,13 @@ function createSphere(sphereGroup,sphereGeometry,material){
     const sphere = new THREE.Mesh(sphereGeometry,material);
     sphere.position.set(15, 0, 0);
     sphere.scale.setScalar(0.8);
+    sphere.material.blending = THREE.AdditiveBlending;
     sphereGroup.add(sphere);
     scene.add(sphereGroup);
 }
 
 function createBox(boxGroup, boxGeometry){
-    const material = new THREE.MeshBasicMaterial({color: 0xffffff, transparent: true, opacity: 0.30, reflectivity: 1.0})
+    const material = new THREE.MeshBasicMaterial({color: 0x4282CB, transparent: true, opacity: 0.20, reflectivity: 1.0})
     const box = new THREE.Mesh(boxGeometry,material);
     box.position.set(0, 0, 0);
     box.scale.setScalar(0.8);
@@ -309,58 +290,34 @@ function positionBoxes(){
     
 }
 
-function addParticles() {
-    const textureLoader = new THREE.TextureLoader();
-
-    textureLoader.load('https://rawgit.com/marcobiedermann/playground/master/three.js/smoke-particles/dist/assets/images/clouds.png', texture => {
-      const smokeMaterial = new THREE.MeshLambertMaterial({
-        color: 0x0000ff,
-        map: texture,
-        transparent: true
-      });
-      smokeMaterial.map.minFilter = THREE.LinearFilter;
-      const smokeGeometry = new THREE.PlaneBufferGeometry(30, 30);
-
-      const smokeMeshes = [];
-      let limit = 30;
-
-      while(limit--) {
-        smokeMeshes[limit] = new THREE.Mesh(smokeGeometry, smokeMaterial);
-        smokeMeshes[limit].position.set(Math.random() * (30-1) + 1, 0, 0);
-        smokeMeshes[limit].rotation.z = 0.1;
-        smokeParticles.push(smokeMeshes[limit]);
-        scene.add(smokeMeshes[limit]);
-      }
+function startPlaystationFont(){
+    const fontLoader = new TTFLoader();
+    fontLoader.load("PlaystationFont.ttf", function (json){
+        const textGeometry = new TextGeometry("Playstation 2",{
+            font: new Font(json),
+            size: 3,
+            height: 0
+        })
+        playstationText = new THREE.Mesh(textGeometry, new THREE.MeshLambertMaterial({color: 0xffffff, emissive: 0xb4b4b4}));
+        playstationText.rotation.set(4.75,0,0);
+        playstationText.position.set(-10,0,0);
+        scene.add(playstationText);
     });
-  }
+}
 
-  function addBackground() {
-    const textureLoader = new THREE.TextureLoader();
-    const textGeometry = new THREE.PlaneBufferGeometry(10, 10);
-
-    textureLoader.load('https://rawgit.com/marcobiedermann/playground/master/three.js/smoke-particles/dist/assets/images/background.jpg', texture => {
-      const textMaterial = new THREE.MeshLambertMaterial({
-        blending: THREE.AdditiveBlending,
-        color: 0xffffff,
-        map: texture,
-        opacity: 1,
-        transparent: true
-      });
-      textMaterial.map.minFilter = THREE.LinearFilter;
-      const text = new THREE.Mesh(textGeometry, textMaterial);
-
-      text.position.z = 0;
-      scene.add(text);
+function startSonyFont(){
+    const fontLoader = new TTFLoader();
+    fontLoader.load("Sony_Font.ttf", function (json){
+        const textGeometry = new TextGeometry("Sony Computer Entertainment",{
+            font: new Font(json),
+            size: 2,
+            height: 0.0
+        })
+        sonyText = new THREE.Mesh(textGeometry, new THREE.MeshLambertMaterial({color: 0xffffff, emissive: 0xb4b4b4}));
+        sonyText.rotation.set(4.75,0,0);
+        sonyText.position.set(-20,15,0);
+        scene.add(sonyText);
     });
-  }
+}
 
-  function evolveSmoke(delta) {
-
-    let smokeParticlesLength = smokeParticles.length;
-
-    while(smokeParticlesLength--) {
-      smokeParticles[smokeParticlesLength].rotation.z += delta * 0.2;
-    }
-  }
-
-tick()
+tick();
