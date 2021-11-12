@@ -11,3 +11,4 @@ npm install
 
 # Run the local server at localhost:8080
 npm run dev
+#Note: IF THE AUDIO DOES NOT START, CLICK ON restartAnimation INSIDE THE Animation FOLDER ON THE TOP RIGHT

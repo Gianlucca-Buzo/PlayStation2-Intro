@@ -2,18 +2,18 @@ import './style.css'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { TTFLoader } from 'three/examples/jsm/loaders/TTFLoader.js'
-import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
+import { TextGeometry } from '../assistant_modules/TextGeometry.js';
 import * as dat from 'dat.gui'
 import { MeshBasicMaterial, SphereGeometry, TextureFilter, TextureLoader, Vector3 } from 'three'
 import  {Smoke } from "./smoke"
-import { Font, FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
+import { Font, FontLoader } from '../assistant_modules/FontLoader.js';
 
 
 
 // Gui
 var animationConfig = {restartSound: false,restartAnimation: false}
 animationConfig.restartSound = async function(){
-    play();
+    playBackground();
     return;
 }
 
@@ -138,7 +138,7 @@ renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
 //Sound
-function play(){
+function playBackground(){
     const listener = new THREE.AudioListener();
     camera.add( listener );
 
@@ -154,7 +154,23 @@ function play(){
         sound.play();
     });
 }
-// play();
+
+function playPlaystation(){
+    const listener = new THREE.AudioListener();
+    camera.add( listener );
+
+    // create a global audio source
+    const sound = new THREE.Audio( listener );
+
+    // load a sound and set it as the Audio object's buffer
+    const audioLoader = new THREE.AudioLoader();
+    audioLoader.load( 'playstation_sound.mp3', function( buffer ) {
+        sound.setBuffer( buffer );
+        sound.setLoop( false );
+        sound.setVolume( 0.5 );
+        sound.play();
+    });
+}
 
 /**
  * Animate
@@ -176,7 +192,7 @@ var playstationText;
 
 function startCameraAnimation(){
     cameraClock = new THREE.Clock();
-    play();
+    playBackground();
     if(sonyFlag){
         scene.remove(sonyText);
         sonyFlag = false;
@@ -235,7 +251,10 @@ const tick = () =>
             if(cameraElapsedTime <= 28){
                 camera.position.set(cameraX,cameraY - cameraElapsedTime, cameraZ);
             }else{
-                startPlaystationFont();
+                if(!playstationFlag){
+                    startPlaystationFont();
+                    playstationFlag = true;
+                }
             }
         }
     }
@@ -303,6 +322,7 @@ function startPlaystationFont(){
         playstationText.rotation.set(4.75,0,0);
         playstationText.position.set(-10,0,0);
         scene.add(playstationText);
+        playPlaystation();
     });
 }
 
