@@ -186,6 +186,7 @@ function startCameraAnimation(){
         playstationFlag = false;
     }
 }
+
 startCameraAnimation();
 
 
